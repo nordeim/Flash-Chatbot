@@ -1,7 +1,7 @@
-# Step-3.5-Flash – Hugging Face Space Optimised Dockerfile
+# Hugging Face Space Optimised Dockerfile
 # Single-stage, non‑root, port 7860, Debian slim base
 # -------------------------------------------------------------------
-FROM python:3.13-slim AS production
+FROM python:3.13-trixie
 
 LABEL maintainer="Nordeim" \
       description="Flash Chatbot – NVIDIA API, Streamlit, Clean Architecture" \
@@ -22,7 +22,7 @@ ENV PYTHONUNBUFFERED=1 \
 # System dependencies – only what is strictly necessary
 # -------------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+    curl git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
