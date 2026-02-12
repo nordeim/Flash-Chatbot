@@ -19,7 +19,7 @@ RETRY_DELAY = 1.0  # seconds
 RETRY_BACKOFF = 2.0  # exponential backoff multiplier
 
 # UI Configuration
-PAGE_TITLE = "Step-3.5-Flash"
+PAGE_TITLE = "Flash Chatbot"
 PAGE_ICON = ""
 PAGE_LAYOUT = "centered"
 

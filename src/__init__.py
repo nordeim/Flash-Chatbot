@@ -1,5 +1,5 @@
 """
-Step-3.5-Flash Chatbot Application
+Flash Chatbot Application
 
 A production-grade chatbot built with Streamlit and NVIDIA API.
 """

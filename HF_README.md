@@ -50,10 +50,12 @@ cp .env.example .env
 
 4. Run the application:
 ```bash
-streamlit run src/main.py
+streamlit run main.py
 ```
 
 The application will be available at `http://localhost:7860`
+
+**Note**: For local development, you can also run `streamlit run src/main.py`, but for Hugging Face Spaces deployment, use `main.py` at the root level.
 
 ### Docker Deployment
 
@@ -85,32 +87,33 @@ docker run -p 7860:7860 -e NVIDIA_API_KEY=your-key flash-chatbot
 
 ```
 Flash-Chatbot/
+├── main.py                        # Hugging Face Spaces entry point
 ├── src/
-│   ├── main.py              # Application entry point
+│   ├── main.py                    # Application entry point
 │   ├── config/
-│   │   ├── constants.py     # Application constants
-│   │   └── settings.py      # Configuration management
+│   │   ├── constants.py           # Application constants
+│   │   └── settings.py            # Configuration management
 │   ├── api/
-│   │   ├── nvidia_client.py # NVIDIA API client
-│   │   ├── models.py        # Pydantic models
-│   │   └── exceptions.py    # Custom exceptions
+│   │   ├── nvidia_client.py       # NVIDIA API client
+│   │   ├── models.py              # Pydantic models
+│   │   └── exceptions.py          # Custom exceptions
 │   ├── services/
-│   │   ├── chat_service.py  # Business logic
-│   │   ├── state_manager.py # Session management
-│   │   └── message_formatter.py # Message formatting
+│   │   ├── chat_service.py        # Business logic
+│   │   ├── state_manager.py       # Session management
+│   │   └── message_formatter.py   # Message formatting
 │   ├── ui/
-│   │   ├── chat_interface.py # Main UI
-│   │   ├── sidebar.py       # Settings sidebar
-│   │   ├── components.py    # UI components
-│   │   └── styles.py        # Custom CSS
+│   │   ├── chat_interface.py      # Main UI
+│   │   ├── sidebar.py             # Settings sidebar
+│   │   ├── components.py          # UI components
+│   │   └── styles.py              # Custom CSS
 │   └── utils/
-│       └── logger.py        # Logging utilities
-├── requirements.txt         # Dependencies
-├── requirements-dev.txt     # Development dependencies
-├── Dockerfile              # Container definition
-├── docker-compose.yml      # Docker compose config
-├── .env.example            # Environment template
-└── README.md               # This file
+│       └── logger.py              # Logging utilities
+├── requirements.txt               # Dependencies
+├── requirements-dev.txt           # Development dependencies
+├── Dockerfile                     # Container definition
+├── docker-compose.yml             # Docker compose config
+├── .env.example                   # Environment template
+└── README.md                      # This file
 ```
 
 ## Architecture

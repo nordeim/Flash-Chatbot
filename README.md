@@ -40,10 +40,12 @@ cp .env.example .env
 
 4. Run the application:
 ```bash
-streamlit run src/main.py
+streamlit run main.py
 ```
 
 The application will be available at `http://localhost:7860`
+
+**Note**: For local development, you can also run `streamlit run src/main.py`, but for Hugging Face Spaces deployment, use `main.py` at the root level.
 
 ### Docker Deployment
 
