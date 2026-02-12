@@ -46,6 +46,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Application code – baked in, no runtime mounts
 # -------------------------------------------------------------------
 COPY --chown=appuser:appuser src/ ./src/
+COPY --chown=appuser:appuser main.py .
 # Provide a default .env file (will be overridden by env vars)
 COPY --chown=appuser:appuser .env.example .env
 
@@ -68,4 +69,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # -------------------------------------------------------------------
 # Start Streamlit – port and address already set via ENV
 # -------------------------------------------------------------------
-ENTRYPOINT ["streamlit", "run", "src/main.py"]
+ENTRYPOINT ["streamlit", "run", "main.py"]
