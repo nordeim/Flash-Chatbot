@@ -93,3 +93,73 @@ pip install -r requirements.txt
 # Run
 streamlit run src/main.py
 The application is now a production-grade, modular chatbot with NVIDIA API integration, Clean Architecture, and comprehensive testing!
+
+---
+
+Thinking: Perfect! Now let me also add main.py to the .gitignore if it's generated, but actually we want it to be tracked. Let me also update the .dockerignore to include test files and other things that shouldn't be in the container.
+Actually, let me verify that the fix is complete by doing a final check. The issue was:```
+ModuleNotFoundError: No module named 'src'
+Traceback: File "/app/Flash-Chatbot/src/main.py", line 12, in <module> from src.config.constants import PAGE_TITLE, PAGE_ICON, PAGE_LAYOUT
+The root cause was that `src/main.py` was being run directly, and the imports like `from src.config.constants` were failing because `src` wasn't in the Python path.
+My fix:
+1. Created a root-level `main.py` that adds the current directory to Python path
+2. Updated the Dockerfile to use `main.py` as the entry point
+3. Updated the README and HF_README.md to reflect the new entry point
+This should resolve the issue. The root `main.py` adds the current directory to the path, then imports from `src.main`, which will have `src` available in the path.
+Let me also make sure the `.dockerignore` is not excluding the root main.py
+→ Read .dockerignore 
+Thinking: The .dockerignore looks good - it doesn't exclude main.py, so the root-level main.py will be copied into the container.
+Now let me create a summary of the changes made
+Perfect! The .dockerignore doesn't exclude main.py. 
+✅ Hugging Face Spaces Deployment Fix Complete!
+Problem
+The Hugging Face Spaces deployment was failing with:
+ModuleNotFoundError: No module named 'src'
+This happened because src/main.py uses absolute imports like from src.config.constants import..., but when running directly from the container, Python couldn't find the src module.
+Solution Implemented
+1. Created root-level entry point (/home/project/Step-3.5-Flash/main.py):
+   - Adds current directory to Python path
+   - Imports and delegates to src/main
+   - Proper entry point for Hugging Face Spaces
+2. Updated Dockerfile:
+   - Changed entry point from src/main.py to main.py
+   - Added COPY for the root main.py
+3. Updated docker-compose.yml:
+   - Updated port from 8501 to 7860 (HF Spaces standard)
+   - Added volume mount for root main.py
+4. Updated Documentation:
+   - README.md: Changed run command to streamlit run main.py
+   - HF_README.md: Same updates + added root main.py to project structure
+Files Modified
+- ✅ main.py (new root-level entry point)
+- ✅ Dockerfile (updated ENTRYPOINT)
+- ✅ docker-compose.yml (updated ports and volumes)
+- ✅ README.md (updated run instructions)
+- ✅ HF_README.md (updated run instructions and structure)
+The application should now deploy successfully to Hugging Face Spaces!
+
+---
+
+Thinking: Perfect! Both occurrences have been fixed with the robot emoji. Let me also update the imports in the
+Perfect! ✅ Root Cause Identified and Fixed
+Root Cause Analysis
+Error: StreamlitAPIException: Failed to load the provided avatar value as an image.
+Location: src/ui/chat_interface.py at lines 46 and 87
+Issue: The code was using avatar="" (empty string) for the assistant chat message avatar. Streamlit's st.chat_message() function expects the avatar parameter to be either:
+- An emoji string (e.g., "🤖")
+- None (for default avatar)
+- A valid image URL or path
+An empty string "" is not a valid value and causes Streamlit to fail when trying to load it as an image.
+Fix Applied
+Changed both occurrences from:
+with st.chat_message("assistant", avatar=""):
+To:
+with st.chat_message("assistant", avatar="🤖"):
+Using the robot emoji (🤖) as the assistant avatar, which is:
+- Visually appropriate for an AI assistant
+- Valid for Streamlit's avatar parameter
+- Consistent with the dark theme design
+Files Modified
+- ✅ src/ui/chat_interface.py (lines 46 and 87)
+The application should now run without the avatar error!
+

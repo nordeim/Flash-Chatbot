@@ -43,7 +43,7 @@ def render_chat_interface(
             with st.chat_message("user"):
                 st.markdown(msg["content"])
         elif msg["role"] == "assistant":
-            with st.chat_message("assistant", avatar=""):
+            with st.chat_message("assistant", avatar="🤖"):
                 # Show thinking if present
                 if msg.get("thinking"):
                     render_thinking_panel(msg["thinking"], is_streaming=False)
@@ -84,7 +84,7 @@ def _handle_user_input(
         st.markdown(prompt)
     
     # Generate assistant response
-    with st.chat_message("assistant", avatar=""):
+    with st.chat_message("assistant", avatar="🤖"):
         # Placeholders for streaming content
         thinking_placeholder = st.empty()
         content_placeholder = st.empty()
