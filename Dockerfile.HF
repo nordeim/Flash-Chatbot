@@ -1,0 +1,83 @@
+# Hugging Face Space Optimised Dockerfile
+# Single-stage, non‑root, port 7860, Debian slim base
+# -------------------------------------------------------------------
+FROM python:3.13-trixie
+
+LABEL maintainer="Nordeim" \
+      description="Flash Chatbot – NVIDIA API, Streamlit, Clean Architecture" \
+      version="1.0.0"
+
+# -------------------------------------------------------------------
+# Environment – robust defaults, no .env dependency
+# -------------------------------------------------------------------
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    STREAMLIT_SERVER_PORT=7860 \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+# -------------------------------------------------------------------
+# System dependencies – only what is strictly necessary
+# -------------------------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core utilities
+    bash coreutils ca-certificates cron curl git less procps sudo vim tar wget zip unzip tmux openssh-client \
+    # Build tools for ttyd
+    build-essential cmake pkg-config \
+    # ttyd dependencies
+    libjson-c-dev libssl-dev libwebsockets-dev \
+    # Node.js prerequisites
+    gnupg \
+    # Playwright system dependencies
+    libasound2 libatk-bridge2.0-0 libatk1.0-0 libcairo2 libcups2 \
+    libdbus-1-3 libdrm2 libgbm1 libglib2.0-0 libnspr4 libnss3 \
+    libpango-1.0-0 libx11-6 libxcb1 libxcomposite1 libxdamage1 \
+    libxext6 libxfixes3 libxrandr2 libxshmfence1 && \
+    # Clean up
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# -------------------------------------------------------------------
+# Create non‑root user and set working directory
+# -------------------------------------------------------------------
+RUN groupadd -g 1000 appuser && \
+    useradd -m -u 1000 -g appuser -s /bin/bash appuser && \
+    mkdir -p /app && chown -R appuser:appuser /app
+RUN cd /app && git clone https://github.com/nordeim/Flash-Chatbot
+WORKDIR /app/Flash-Chatbot
+
+# -------------------------------------------------------------------
+# Python dependencies – leverage Docker cache
+# -------------------------------------------------------------------
+COPY --chown=appuser:appuser requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# -------------------------------------------------------------------
+# Application code – baked in, no runtime mounts
+# -------------------------------------------------------------------
+COPY --chown=appuser:appuser src/ ./src/
+# Provide a default .env file (will be overridden by env vars)
+COPY --chown=appuser:appuser .env.example .env
+
+# -------------------------------------------------------------------
+# Switch to non‑root user for security
+# -------------------------------------------------------------------
+USER appuser
+
+# -------------------------------------------------------------------
+# Port declaration – HF Space expects 7860
+# -------------------------------------------------------------------
+EXPOSE 7860
+
+# -------------------------------------------------------------------
+# Health check – ensures Space orchestrator knows container is ready
+# -------------------------------------------------------------------
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:7860/_stcore/health || exit 1
+
+# -------------------------------------------------------------------
+# Start Streamlit – port and address already set via ENV
+# -------------------------------------------------------------------
+ENTRYPOINT ["streamlit", "run", "src/main.py"]
