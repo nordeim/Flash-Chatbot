@@ -1,6 +1,12 @@
-altair
-pandas
-streamlit
-httpx
-regex
-requests
+# Core dependencies
+streamlit>=1.29.0
+requests>=2.31.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+python-dotenv>=1.0.0
+
+# HTTP client (using requests per NVIDIA API template)
+httpx>=0.25.0
+
+# Utilities
+python-json-logger>=2.0.7
