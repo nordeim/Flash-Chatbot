@@ -1,47 +1,71 @@
-# Multi-stage build for production
-FROM python:3.13-trixie as builder
+# Step-3.5-Flash – Hugging Face Space Optimised Dockerfile
+# Single-stage, non‑root, port 7860, Debian slim base
+# -------------------------------------------------------------------
+FROM python:3.13-slim AS production
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 
+LABEL maintainer="Nordeim" \
+      description="Flash Chatbot – NVIDIA API, Streamlit, Clean Architecture" \
+      version="1.0.0"
 
-# Install build dependencies
+# -------------------------------------------------------------------
+# Environment – robust defaults, no .env dependency
+# -------------------------------------------------------------------
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    STREAMLIT_SERVER_PORT=7860 \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+# -------------------------------------------------------------------
+# System dependencies – only what is strictly necessary
+# -------------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    curl \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create virtual environment
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# -------------------------------------------------------------------
+# Create non‑root user and set working directory
+# -------------------------------------------------------------------
+RUN groupadd -g 1000 appuser && \
+    useradd -m -u 1000 -g appuser -s /bin/bash appuser && \
+    mkdir -p /app && chown -R appuser:appuser /app
 
-# Install dependencies
-COPY requirements.txt .
+WORKDIR /app
+
+# -------------------------------------------------------------------
+# Python dependencies – leverage Docker cache
+# -------------------------------------------------------------------
+COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Production stage
-FROM python:3.13-trixie as production
+# -------------------------------------------------------------------
+# Application code – baked in, no runtime mounts
+# -------------------------------------------------------------------
+COPY --chown=appuser:appuser src/ ./src/
+# Provide a default .env file (will be overridden by env vars)
+COPY --chown=appuser:appuser .env.example .env
 
-# Set working directory
-WORKDIR /app
-
-# Copy virtual environment from builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Create non-root user
-RUN groupadd -g 1000 appuser && useradd -m -u 1000 -g appuser -d /home/appuser appuser && chown -R appuser:appuser /app
+# -------------------------------------------------------------------
+# Switch to non‑root user for security
+# -------------------------------------------------------------------
 USER appuser
 
-# Copy application code
-COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser .env.example .
+# -------------------------------------------------------------------
+# Port declaration – HF Space expects 7860
+# -------------------------------------------------------------------
+EXPOSE 7860
 
-# Expose Streamlit port
-EXPOSE 8501
-
-# Health check
+# -------------------------------------------------------------------
+# Health check – ensures Space orchestrator knows container is ready
+# -------------------------------------------------------------------
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+    CMD curl -f http://localhost:7860/_stcore/health || exit 1
 
-# Run Streamlit
-ENTRYPOINT ["streamlit", "run", "src/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# -------------------------------------------------------------------
+# Start Streamlit – port and address already set via ENV
+# -------------------------------------------------------------------
+ENTRYPOINT ["streamlit", "run", "src/main.py"]

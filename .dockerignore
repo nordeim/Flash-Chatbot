@@ -1,62 +1,24 @@
-# Git
-.git/
+# Version control
+.git
 .gitignore
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
-venv/
-.venv/
-ENV/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-tests/
-
-# Documentation
-docs/
-*.md
-!README.md
-
-# CI/CD
-.github/
-.gitlab-ci.yml
-
-# Logs
-*.log
-logs/
-
-# Local environment
+# Local development
 .env
 .env.local
-.env.*.local
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov
 
-# Streamlit
-.streamlit/
+# Docker files (already copied explicitly)
+docker-compose.yml
+README.md
+CHANGELOG.md
+ARCHITECTURE.md
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
+# Tests (not needed in production image)
+tests/
+*.test.py
