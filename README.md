@@ -1,5 +1,5 @@
 ---
-title: Step-3.5-Flash Chatbot
+title: Flash Chatbot
 emoji: "🚀"
 colorFrom: blue
 colorTo: purple
@@ -9,24 +9,24 @@ pinned: false
 license: apache-2.0
 ---
 
-# Step-3.5-Flash Chatbot
+# Flash Chatbot
 
-基于 [stepfun-ai/Step-3.5-Flash](https://huggingface.co/stepfun-ai/Step-3.5-Flash) 模型的智能对话助手，使用官方 API。
+An intelligent conversational assistant built upon the 'stepfun-ai/Step-3.5-Flash' model, utilising its official API.
 
-## 特性
+## Features
 
-- 左右分栏布局：左侧展示思考过程，右侧展示对话
-- 多轮对话支持
-- 流式输出
-- 可调节参数（temperature, top_p, max_tokens）
+- Split-pane layout: The left pane displays the thought process, whilst the right pane shows the conversation.
+- Supports multi-turn conversations.
+- Streaming output.
+- Adjustable parameters (temperature, top_p, max_tokens).
 
-## 环境变量
+## Environment Variables
 
-在 HuggingFace Space 的 Settings > Repository secrets 中设置：
+These should be configured within HuggingFace Space's Settings > Repository secrets:
 
-- [`STEPFUN_API_KEY`](https://platform.stepfun.com/interface-key): StepFun 官方 API Key [https://platform.stepfun.com/interface-key](https://platform.stepfun.com/interface-key)
+- `STEPFUN_API_KEY`: Your official StepFun API Key
 
-## 本地运行
+## Running Locally
 
 ```bash
 export STEPFUN_API_KEY="your-api-key"
