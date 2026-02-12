@@ -1,7 +1,7 @@
-# Step-3.5-Flash – Hugging Face Space Optimised Dockerfile
+# Hugging Face Space Optimised Dockerfile
 # Single-stage, non‑root, port 7860, Debian slim base
 # -------------------------------------------------------------------
-FROM python:3.13-slim AS production
+FROM python:3.13-trixie
 
 LABEL maintainer="Nordeim" \
       description="Flash Chatbot – NVIDIA API, Streamlit, Clean Architecture" \
@@ -22,7 +22,7 @@ ENV PYTHONUNBUFFERED=1 \
 # System dependencies – only what is strictly necessary
 # -------------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+    curl git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -46,6 +46,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Application code – baked in, no runtime mounts
 # -------------------------------------------------------------------
 COPY --chown=appuser:appuser src/ ./src/
+COPY --chown=appuser:appuser main.py .
 # Provide a default .env file (will be overridden by env vars)
 COPY --chown=appuser:appuser .env.example .env
 
@@ -68,4 +69,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # -------------------------------------------------------------------
 # Start Streamlit – port and address already set via ENV
 # -------------------------------------------------------------------
-ENTRYPOINT ["streamlit", "run", "src/main.py"]
+ENTRYPOINT ["streamlit", "run", "main.py"]
