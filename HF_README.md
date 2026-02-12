@@ -1,4 +1,14 @@
-# Flash Chatbot
+---
+title: Flash Chatbot
+emoji: 📊
+colorFrom: pink
+colorTo: yellow
+sdk: docker
+pinned: false
+license: mit
+short_description: NV Chat
+app_port: 7860
+---
 
 A production-grade intelligent conversational assistant built with Streamlit and the NVIDIA API, featuring a modern dark mode UI with glassmorphism design.
 
@@ -204,3 +214,4 @@ Contributions are welcome! Please:
 - Built with [Streamlit](https://streamlit.io/)
 - Powered by [NVIDIA API](https://www.nvidia.com/en-us/ai/)
 - Uses [moonshotai/kimi-k2.5](https://huggingface.co/moonshotai/kimi-k2.5) model
+
