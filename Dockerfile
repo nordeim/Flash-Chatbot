@@ -1,5 +1,8 @@
 # Multi-stage build for production
-FROM python:3.11-slim as builder
+FROM python:3.13-trixie as builder
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +19,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Production stage
-FROM python:3.11-slim as production
+FROM python:3.13-trixie as production
 
 # Set working directory
 WORKDIR /app
@@ -26,7 +29,7 @@ COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN groupadd -g 1000 appuser && useradd -m -u 1000 -g appuser -d /home/appuser appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Copy application code
