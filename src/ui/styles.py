@@ -184,7 +184,102 @@ header {visibility: hidden;}
     z-index: 100;
 }
 
-/* Sidebar styling */
+/* Sidebar styling - Streamlit sidebar elements */
+.stSidebar {
+    background-color: #1e1e28 !important;
+}
+
+/* Target sidebar content areas at multiple levels */
+.stSidebar > div,
+.stSidebar > div > div,
+.stSidebar > div > div > div {
+    background-color: #1e1e28 !important;
+}
+
+/* Streamlit's internal sidebar content container */
+section[data-testid="stSidebar"] {
+    background-color: #1e1e28 !important;
+}
+
+section[data-testid="stSidebar"] > div {
+    background-color: #1e1e28 !important;
+}
+
+section[data-testid="stSidebar"] > div > div {
+    background-color: #1e1e28 !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    background-color: #1e1e28 !important;
+}
+
+/* Ensure sidebar text is white and visible */
+.stSidebar p,
+.stSidebar span,
+.stSidebar label,
+.stSidebar .stSlider label,
+.stSidebar .stMarkdown,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label {
+    color: #ffffff !important;
+}
+
+/* Sidebar headings */
+.stSidebar h1,
+.stSidebar h2,
+.stSidebar h3,
+.stSidebar h4,
+.stSidebar h5,
+.stSidebar h6,
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4,
+section[data-testid="stSidebar"] h5,
+section[data-testid="stSidebar"] h6 {
+    color: #ffffff !important;
+}
+
+/* Slider text in sidebar */
+.stSidebar .stSlider label,
+section[data-testid="stSidebar"] .stSlider label {
+    color: #ffffff !important;
+}
+
+/* Text area in sidebar */
+.stSidebar .stTextArea > div > div > textarea,
+section[data-testid="stSidebar"] .stTextArea > div > div > textarea {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+/* Expander in sidebar */
+.stSidebar .streamlit-expanderHeader,
+section[data-testid="stSidebar"] .streamlit-expanderHeader {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+}
+
+.stSidebar .streamlit-expanderContent,
+section[data-testid="stSidebar"] .streamlit-expanderContent {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+/* Info text in sidebar */
+.stSidebar .stAlert,
+section[data-testid="stSidebar"] .stAlert {
+    background: rgba(0, 212, 255, 0.1) !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+/* Sidebar glass card */
 .sidebar-glass {
     background: rgba(18, 18, 26, 0.95);
     border-right: 1px solid var(--border-glass);
