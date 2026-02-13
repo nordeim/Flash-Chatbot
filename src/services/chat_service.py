@@ -190,6 +190,91 @@ class ChatService(LoggerMixin):
             # Save error message
             self.state_manager.add_assistant_message(error_msg)
     
+    def stream_message_with_rag(
+        self,
+        content: str,
+        retriever: Optional[Any] = None,
+        system_prompt: Optional[str] = None,
+        model: str = DEFAULT_MODEL,
+        max_tokens: int = DEFAULT_MAX_TOKENS,
+        temperature: float = DEFAULT_TEMPERATURE,
+        top_p: float = DEFAULT_TOP_P,
+        thinking: bool = DEFAULT_THINKING,
+        k: int = 3
+    ) -> Generator[Tuple[str, str, Optional[Any]], None, None]:
+        """Send message with RAG context and stream response.
+        
+        If retriever is provided and has documents, retrieves relevant chunks
+        and injects them into the system prompt for context-aware responses.
+        
+        Args:
+            content: User message content
+            retriever: Optional retriever with uploaded documents
+            system_prompt: Optional system prompt (will be augmented with context)
+            model: Model to use
+            max_tokens: Maximum tokens
+            temperature: Temperature
+            top_p: Top-p parameter
+            thinking: Enable thinking mode
+            k: Number of chunks to retrieve
+            
+        Yields:
+            Tuple of (thinking, content, reasoning_details)
+        """
+        # Build augmented system prompt if retriever available
+        augmented_prompt = system_prompt
+        
+        if retriever is not None:
+            try:
+                # Check if retriever has documents
+                has_docs = (
+                    hasattr(retriever, 'documents') and len(retriever.documents) > 0
+                ) or (
+                    hasattr(retriever, 'index') and 
+                    retriever.index is not None and 
+                    hasattr(retriever.index, 'ntotal') and 
+                    retriever.index.ntotal > 0
+                )
+                
+                if has_docs:
+                    # Retrieve relevant chunks
+                    results = retriever.retrieve(content, k=k)
+                    
+                    if results:
+                        # Format context
+                        context_chunks = [doc.text for doc, _ in results]
+                        context_text = "\n\n---\n".join(context_chunks)
+                        
+                        # Augment system prompt
+                        if augmented_prompt:
+                            augmented_prompt = (
+                                f"{augmented_prompt}\n\n"
+                                f"Use the following context to answer the user's question:\n\n"
+                                f"{context_text}"
+                            )
+                        else:
+                            augmented_prompt = (
+                                f"You are a helpful assistant. Use the following context to answer the user's question:\n\n"
+                                f"{context_text}"
+                            )
+                        
+                        self.logger.info(f"Injected {len(results)} context chunks into prompt")
+                        
+            except Exception as e:
+                self.logger.warning(f"RAG retrieval failed, proceeding without context: {e}")
+                # Continue without context augmentation
+        
+        # Delegate to regular streaming with augmented prompt
+        yield from self.stream_message(
+            content=content,
+            system_prompt=augmented_prompt,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            thinking=thinking
+        )
+
     def clear_conversation(self) -> None:
         """Clear conversation history."""
         self.state_manager.clear_history()

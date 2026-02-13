@@ -26,10 +26,12 @@ class ConversationState:
 
 class ChatStateManager:
     """Manager for chat session state."""
-    
+
     SESSION_KEY = "chat_messages"
     SESSION_ID_KEY = "session_id"
     PENDING_PROMPT_KEY = "pending_prompt"
+    RETRIEVER_KEY = "rag_retriever"
+    DOCUMENT_NAME_KEY = "rag_document_name"
     
     def __init__(self):
         """Initialize state manager."""
@@ -75,7 +77,56 @@ class ChatStateManager:
     def pending_prompt(self, value: Optional[str]) -> None:
         """Set pending prompt."""
         st.session_state[self.PENDING_PROMPT_KEY] = value
-    
+
+    @property
+    def retriever(self) -> Optional[Any]:
+        """Get RAG retriever for current session.
+        
+        Returns:
+            Retriever instance or None if not set
+        """
+        return st.session_state.get(self.RETRIEVER_KEY)
+
+    @retriever.setter
+    def retriever(self, value: Optional[Any]) -> None:
+        """Set RAG retriever for current session.
+        
+        Args:
+            value: Retriever instance or None
+        """
+        st.session_state[self.RETRIEVER_KEY] = value
+
+    @property
+    def current_document_name(self) -> Optional[str]:
+        """Get current document name.
+        
+        Returns:
+            Document filename or None if no document
+        """
+        return st.session_state.get(self.DOCUMENT_NAME_KEY)
+
+    @current_document_name.setter
+    def current_document_name(self, value: Optional[str]) -> None:
+        """Set current document name.
+        
+        Args:
+            value: Document filename or None
+        """
+        st.session_state[self.DOCUMENT_NAME_KEY] = value
+
+    def clear_retriever(self) -> None:
+        """Clear retriever and document metadata."""
+        if self.RETRIEVER_KEY in st.session_state:
+            retriever = st.session_state[self.RETRIEVER_KEY]
+            if hasattr(retriever, 'clear'):
+                retriever.clear()
+            del st.session_state[self.RETRIEVER_KEY]
+        
+        if self.DOCUMENT_NAME_KEY in st.session_state:
+            del st.session_state[self.DOCUMENT_NAME_KEY]
+        
+        logger.info("Cleared RAG retriever and document metadata")
+
     def add_message(
         self,
         role: str,
