@@ -163,3 +163,22 @@ Files Modified
 - ✅ src/ui/chat_interface.py (lines 46 and 87)
 The application should now run without the avatar error!
 
+---
+
+Thinking: Perfect! I've made the text significantly brighter:
+1. Changed text-primary from #e0e0e0 (light gray) to #ffffff (pure white)
+2. Changed text-secondary from #888888 to #c0c0c0 (brighter gray)
+3. Changed text-muted from #64748b to #9090a0 (brighter muted text)
+4. Increased bg-card opacity from 0.6 to 0.85 for better contrast
+5. Increased bg-glass opacity from 0.05 to 0.08
+6. Added comprehensive CSS rules to force bright text colors on Streamlit chat elements
+The user should now be able to see the LLM responses clearly with high contrast
+Done! I've significantly brightened the text for better visibility:
+Changes made:
+1. --text-primary: Changed from #e0e0e0 → #ffffff (pure white)
+2. --text-secondary: Changed from #888888 → #c0c0c0 (brighter gray)
+3. --text-muted: Changed from #64748b → #9090a0 (brighter)
+4. --bg-card: Increased opacity from 0.6 → 0.85 (darker background for better contrast)
+5. Added CSS rules to force #ffffff color on all chat message elements
+The LLM responses should now display in bright white text that's easy to read on the dark background.
+

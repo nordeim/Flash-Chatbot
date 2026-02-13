@@ -6,11 +6,11 @@ CUSTOM_CSS = """
 :root {
     --bg-primary: #0a0a0f;
     --bg-secondary: #12121a;
-    --bg-card: rgba(30, 30, 40, 0.6);
-    --bg-glass: rgba(255, 255, 255, 0.05);
-    --text-primary: #e0e0e0;
-    --text-secondary: #888888;
-    --text-muted: #64748b;
+    --bg-card: rgba(30, 30, 40, 0.85);
+    --bg-glass: rgba(255, 255, 255, 0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #c0c0c0;
+    --text-muted: #9090a0;
     --accent-primary: #00d4ff;
     --accent-secondary: #7c3aed;
     --border-glass: rgba(255, 255, 255, 0.1);
@@ -23,6 +23,34 @@ CUSTOM_CSS = """
 /* Main background */
 .stApp {
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+/* Ensure all text in app is bright */
+.stApp, .stApp p, .stApp span, .stApp div {
+    color: var(--text-primary);
+}
+
+/* Chat message specific bright text */
+.stChatMessage {
+    color: #ffffff !important;
+}
+
+.stChatMessageContent {
+    color: #ffffff !important;
+}
+
+.stChatMessageContent p {
+    color: #ffffff !important;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.stMarkdown {
+    color: #ffffff !important;
+}
+
+.stMarkdown p {
+    color: #ffffff !important;
 }
 
 /* Hide default Streamlit elements */
@@ -110,6 +138,28 @@ header {visibility: hidden;}
     border: 1px solid var(--border-glass);
     margin-right: auto;
     max-width: 95%;
+    color: var(--text-primary);
+}
+
+/* Streamlit chat message content - ensure bright text */
+[data-testid="stChatMessage"] {
+    color: var(--text-primary) !important;
+}
+
+[data-testid="stChatMessage"] p,
+[data-testid="stChatMessage"] span,
+[data-testid="stChatMessage"] div {
+    color: var(--text-primary) !important;
+}
+
+/* Assistant specific styling */
+[data-testid="stChatMessage"][data-role="assistant"] {
+    color: #ffffff !important;
+}
+
+[data-testid="stChatMessage"][data-role="assistant"] p {
+    color: #ffffff !important;
+    font-weight: 400;
 }
 
 @keyframes fadeIn {
