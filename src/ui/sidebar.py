@@ -71,19 +71,36 @@ def render_sidebar() -> Tuple[Dict[str, Any], bool]:
             help="Nucleus sampling parameter"
         )
         
-        st.divider()
-        
-        # Clear conversation button
-        clear_requested = st.button(
+    st.divider()
+
+    # Document Q&A section
+    st.subheader("📚 Document Q&A")
+    
+    # Import and render document upload
+    from src.ui.document_upload import render_document_upload
+    render_document_upload()
+    
+    # Show document info if uploaded
+    if hasattr(st.session_state, 'get') and st.session_state.get("current_document_name"):
+        st.caption(f"📄 {st.session_state['current_document_name']}")
+        if hasattr(st.session_state, 'get') and st.session_state.get("retriever"):
+            retriever = st.session_state["retriever"]
+            if retriever and hasattr(retriever, 'index') and retriever.index:
+                st.caption(f"📊 {retriever.index.ntotal} text chunks in memory")
+    
+    st.divider()
+
+    # Clear conversation button
+    clear_requested = st.button(
             "Clear Conversation",
             use_container_width=True,
             type="secondary"
         )
         
-        # Model info
-        st.divider()
-        with st.expander("Model Info"):
-            st.info("""
+    # Model info
+    st.divider()
+    with st.expander("Model Info"):
+        st.info("""
                 **Model**: moonshotai/kimi-k2.5
                 
                 **Provider**: NVIDIA API

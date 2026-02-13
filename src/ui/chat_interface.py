@@ -93,33 +93,54 @@ def _handle_user_input(
         full_thinking = ""
         full_content = ""
         
-        try:
-            # Stream response
-            for thinking, content, reasoning_details in chat_service.stream_message(
+    try:
+        # Check if we have a document for RAG
+        retriever = None
+        if hasattr(st.session_state, 'get'):
+            retriever = st.session_state.get("retriever")
+        
+        # Choose streaming method based on retriever
+        if retriever:
+            # Use RAG-enhanced streaming
+            stream_generator = chat_service.stream_message_with_rag(
+                content=prompt,
+                retriever=retriever,
+                system_prompt=settings.get("system_prompt"),
+                max_tokens=settings.get("max_tokens"),
+                temperature=settings.get("temperature"),
+                top_p=settings.get("top_p"),
+            )
+            logger.info("Using RAG-enhanced streaming with document context")
+        else:
+            # Use regular streaming
+            stream_generator = chat_service.stream_message(
                 content=prompt,
                 system_prompt=settings.get("system_prompt"),
                 max_tokens=settings.get("max_tokens"),
                 temperature=settings.get("temperature"),
                 top_p=settings.get("top_p"),
-            ):
-                # Update thinking
-                if thinking:
-                    full_thinking = thinking
-                    with thinking_placeholder.container():
-                        render_thinking_panel(full_thinking, is_streaming=True)
-                
-                # Update content
-                if content:
-                    full_content = content
-                    content_placeholder.markdown(full_content + "▌")
-            
-            # Final content update (remove cursor)
-            if full_content:
-                content_placeholder.markdown(full_content)
-            
-        except Exception as e:
-            logger.error(f"Error generating response: {e}")
-            render_error_message(f"Failed to generate response: {str(e)}")
+            )
+        
+        # Stream response
+        for thinking, content, reasoning_details in stream_generator:
+            # Update thinking
+            if thinking:
+                full_thinking = thinking
+                with thinking_placeholder.container():
+                    render_thinking_panel(full_thinking, is_streaming=True)
+
+            # Update content
+            if content:
+                full_content = content
+                content_placeholder.markdown(full_content + "▌")
+
+        # Final content update (remove cursor)
+        if full_content:
+            content_placeholder.markdown(full_content)
+
+    except Exception as e:
+        logger.error(f"Error generating response: {e}")
+        render_error_message(f"Failed to generate response: {str(e)}")
 
 
 def render_chat_container(chat_service: ChatService) -> None:
