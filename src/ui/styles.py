@@ -2,8 +2,34 @@
 
 CUSTOM_CSS = """
 <style>
+/* ==========================================================================
+   GOOGLE FONTS IMPORT
+   Satoshi for headings, Inter for body text
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Satoshi from Fontshare CDN */
+@font-face {
+    font-family: 'Satoshi';
+    src: url('https://cdn.fontshare.com/wf/SVCMGWZQ55HBFLKWQ3JQVQSADQVQGJQC/UYCS56JXEHJHNTQUXFC2IVP2NJV4VY4Y/OTFVLUQVHHAQBI3ZBHB6ENWW64NWMYFQ.woff2') format('woff2');
+    font-weight: 300 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Fallback to system fonts while loading */
+@font-face {
+    font-family: 'Satoshi Fallback';
+    src: local('Inter'), local('system-ui');
+    font-weight: 400;
+}
+
 /* Root variables for dark theme */
 :root {
+    /* Typography */
+    --font-heading: 'Satoshi', 'Satoshi Fallback', 'Inter', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     --bg-primary: #0a0a0f;
     --bg-secondary: #12121a;
     --bg-card: rgba(30, 30, 40, 0.85);
@@ -426,15 +452,196 @@ section[data-testid="stSidebar"] .stAlert {
     background: var(--border-accent);
 }
 
+/* ==========================================================================
+   TYPOGRAPHY ENHANCEMENTS
+   Satoshi for headings, Inter for body
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+body, p, span, div {
+    font-family: var(--font-body);
+}
+
+/* Code and monospace elements */
+code, pre, .thinking-content {
+    font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   THREE-ORB THINKING INDICATOR
+   Ethereal pulsing orbs with reduced-motion support
+   ========================================================================== */
+.three-orb-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+}
+
+.three-orb-indicator .orb {
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+/* Animated state (default) */
+.three-orb-indicator.animated .orb {
+    animation: orb-pulse 1.4s ease-in-out infinite;
+}
+
+.three-orb-indicator.animated .orb:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.three-orb-indicator.animated .orb:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.three-orb-indicator.animated .orb:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes orb-pulse {
+    0%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Static state for reduced motion */
+.three-orb-indicator.static .orb {
+    animation: none !important;
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   MICRO-INTERACTIONS
+   Refined hover states and transitions
+   ========================================================================== */
+/* Glass card hover enhancement */
+.glass-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Button hover with subtle scale */
+.stButton > button {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s ease;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) scale(1.02);
+}
+
+.stButton > button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Session tab hover with lift */
+.session-tab {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.session-tab:hover {
+    transform: translateY(-2px);
+}
+
+/* Message bubble entrance animation */
+.message-bubble {
+    animation: message-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes message-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Input focus glow animation */
+input:focus-visible,
+textarea:focus-visible {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Glass shimmer effect on hover */
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+.glass-card:hover::before {
+    left: 100%;
+}
+
+/* Reduced motion - simplify animations */
+@media (prefers-reduced-motion: reduce) {
+    .glass-card,
+    .stButton > button,
+    .session-tab {
+        transition: opacity 0.15s ease !important;
+        transform: none !important;
+    }
+
+    .glass-card:hover,
+    .stButton > button:hover,
+    .session-tab:hover {
+        transform: none !important;
+    }
+
+    .message-bubble {
+        animation: fadeIn 0.2s ease !important;
+    }
+
+    .glass-card::before {
+        display: none;
+    }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .message-user,
     .message-assistant {
         max-width: 95%;
     }
-    
+
     .thinking-container {
         max-height: 150px;
+    }
+
+    .three-orb-indicator {
+        padding: 12px;
     }
 }
 </style>
@@ -443,8 +650,19 @@ section[data-testid="stSidebar"] .stAlert {
 
 def get_custom_css() -> str:
     """Get custom CSS styles.
-    
+
     Returns:
         CSS string
     """
     return CUSTOM_CSS
+
+
+def get_combined_css() -> str:
+    """Get combined custom + accessibility CSS.
+
+    Returns:
+        Combined CSS string with both custom styles and accessibility styles
+    """
+    from src.ui.accessibility import get_accessibility_css
+
+    return CUSTOM_CSS + get_accessibility_css()
