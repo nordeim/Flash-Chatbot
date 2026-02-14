@@ -24,79 +24,97 @@ from src.config.constants import (
 
 def render_sidebar() -> Tuple[Dict[str, Any], bool]:
     """Render settings sidebar.
-    
+
     Returns:
         Tuple of (settings dict, clear_requested bool)
     """
     with st.sidebar:
         st.header(SIDEBAR_TITLE)
-        
+
+        # Session Tabs Section
+        st.subheader("💬 Sessions")
+        try:
+            from src.ui.session_tabs import SessionTabs
+            from src.services.state_manager import ChatStateManager
+
+            state_manager = ChatStateManager()
+            session_manager = state_manager.session_manager
+
+            if session_manager:
+                tabs = SessionTabs(session_manager)
+                tabs.render()
+        except Exception as e:
+            st.warning("Session management unavailable")
+
+        st.divider()
+
         # System prompt
         system_prompt = st.text_area(
             "System Prompt",
             value=DEFAULT_SYSTEM_PROMPT,
             height=100,
-            help="Instructions for the AI assistant"
+            help="Instructions for the AI assistant",
         )
-        
+
         st.divider()
-        
+
         # Generation parameters
         st.subheader("Generation Parameters")
-        
+
         max_tokens = st.slider(
             "Max Tokens",
             min_value=MAX_TOKENS_MIN,
             max_value=MAX_TOKENS_MAX,
             value=DEFAULT_MAX_TOKENS,
             step=MAX_TOKENS_STEP,
-            help="Maximum number of tokens to generate"
+            help="Maximum number of tokens to generate",
         )
-        
+
         temperature = st.slider(
             "Temperature",
             min_value=TEMPERATURE_MIN,
             max_value=TEMPERATURE_MAX,
             value=DEFAULT_TEMPERATURE,
             step=TEMPERATURE_STEP,
-            help="Controls randomness (0 = deterministic, 2 = very random)"
+            help="Controls randomness (0 = deterministic, 2 = very random)",
         )
-        
+
         top_p = st.slider(
             "Top P",
             min_value=TOP_P_MIN,
             max_value=TOP_P_MAX,
             value=DEFAULT_TOP_P,
             step=TOP_P_STEP,
-            help="Nucleus sampling parameter"
+            help="Nucleus sampling parameter",
         )
-        
+
     st.divider()
 
     # Document Q&A section
     st.subheader("📚 Document Q&A")
-    
+
     # Import and render document upload
     from src.ui.document_upload import render_document_upload
+
     render_document_upload()
-    
+
     # Show document info if uploaded
-    if hasattr(st.session_state, 'get') and st.session_state.get("current_document_name"):
+    if hasattr(st.session_state, "get") and st.session_state.get(
+        "current_document_name"
+    ):
         st.caption(f"📄 {st.session_state['current_document_name']}")
-        if hasattr(st.session_state, 'get') and st.session_state.get("retriever"):
+        if hasattr(st.session_state, "get") and st.session_state.get("retriever"):
             retriever = st.session_state["retriever"]
-            if retriever and hasattr(retriever, 'index') and retriever.index:
+            if retriever and hasattr(retriever, "index") and retriever.index:
                 st.caption(f"📊 {retriever.index.ntotal} text chunks in memory")
-    
+
     st.divider()
 
     # Clear conversation button
     clear_requested = st.button(
-            "Clear Conversation",
-            use_container_width=True,
-            type="secondary"
-        )
-        
+        "Clear Conversation", use_container_width=True, type="secondary"
+    )
+
     # Model info
     st.divider()
     with st.expander("Model Info"):
@@ -111,12 +129,12 @@ def render_sidebar() -> Tuple[Dict[str, Any], bool]:
                 - Up to 128k tokens
                 - Multi-turn conversation
             """)
-    
+
     settings = {
         "system_prompt": system_prompt,
         "max_tokens": max_tokens,
         "temperature": temperature,
         "top_p": top_p,
     }
-    
+
     return settings, clear_requested
