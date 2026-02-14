@@ -1053,7 +1053,7 @@ def test_rag_retrieval_flow(sample_chunks):
 
 # 📦 Delivery & Next Steps
 
-The code above is **ready to be merged** into your existing `Step-3.5-Flash` repository.  
+The code above is **ready to be merged** into your existing `Flash-Chatbot` repository.  
 
 **Immediate actions:**
 1. **Run `pip install pypdf sentence-transformers faiss-cpu chardet`** to add required dependencies.  

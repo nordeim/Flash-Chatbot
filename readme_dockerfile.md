@@ -91,13 +91,13 @@ All architectural decisions are **explicitly justified** below, and the final Do
 Place the following **`Dockerfile`** at the root of your repository (replaces existing one).  
 
 ```dockerfile
-# Step-3.5-Flash – Hugging Face Space Optimised Dockerfile
+# Flash-Chatbot – Hugging Face Space Optimised Dockerfile
 # Single-stage, non‑root, port 7860, Debian slim base
 # -------------------------------------------------------------------
 FROM python:3.13-slim AS production
 
 LABEL maintainer="Your Name/Team" \
-      description="Step-3.5-Flash Chatbot – NVIDIA API, Streamlit, Clean Architecture" \
+      description="Flash-Chatbot Chatbot – NVIDIA API, Streamlit, Clean Architecture" \
       version="1.0.0"
 
 # -------------------------------------------------------------------

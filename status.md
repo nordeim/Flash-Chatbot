@@ -117,7 +117,7 @@ The Hugging Face Spaces deployment was failing with:
 ModuleNotFoundError: No module named 'src'
 This happened because src/main.py uses absolute imports like from src.config.constants import..., but when running directly from the container, Python couldn't find the src module.
 Solution Implemented
-1. Created root-level entry point (/home/project/Step-3.5-Flash/main.py):
+1. Created root-level entry point (/home/project/Flash-Chatbot/main.py):
    - Adds current directory to Python path
    - Imports and delegates to src/main
    - Proper entry point for Hugging Face Spaces

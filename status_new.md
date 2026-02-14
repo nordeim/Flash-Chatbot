@@ -47,7 +47,7 @@ B) Minimal Enhancements - Current UI
 Thinking: The user has restricted editing permissions. Let me check what directories I can write to based on the rules. It looks like I can only write to:
 - .opencode/plans/*.md
 - ../../pete/.local/share/opencode/plans/*.md
-But the project directory is /home/project/Step-3.5-Flash. Let me check if I can write to that location by trying a different approach, or just present the plan directly to the user since I can't write to the project directory.
+But the project directory is /home/project/Flash-Chatbot. Let me check if I can write to that location by trying a different approach, or just present the plan directly to the user since I can't write to the project directory.
 Actually, looking at the rules again:
 - "*" pattern allows all actions
 - But then there are specific deny patterns for "edit" 
@@ -327,7 +327,7 @@ Phase 4: Accessibility & Polish- Focus-visible CSS styles
 - Skip-to-chat link- prefers-reduced-motion support
 Phase 2: UI Enhancements (optional/minimal)- Three-orb thinking indicator (replace spinner)
 - Google Fonts (Satoshi/Inter)
-- Micro-interactions (hover states)## Total Test Count72 tests passing:- RAG: 38 tests (DocumentProcessor 10, Retriever 11, ChatService RAG 8, DocumentUpload 9)- Multi-Session: 34 tests (Session 4, SessionManager 19, SessionTabs 11)## Relevant files / directories### Core Implementation (/home/project/Step-3.5-Flash/src/)RAG Module (src/rag/):
+- Micro-interactions (hover states)## Total Test Count72 tests passing:- RAG: 38 tests (DocumentProcessor 10, Retriever 11, ChatService RAG 8, DocumentUpload 9)- Multi-Session: 34 tests (Session 4, SessionManager 19, SessionTabs 11)## Relevant files / directories### Core Implementation (/home/project/Flash-Chatbot/src/)RAG Module (src/rag/):
 - document_processor.py - Text extraction and chunking
 - embedder.py - SentenceTransformer wrapper (lazy loading)
 - retriever.py - FAISS/Simple similarity with auto-fallback- exceptions.py - RAG-specific errors
@@ -338,7 +338,7 @@ Phase 2: UI Enhancements (optional/minimal)- Three-orb thinking indicator (repla
 - sidebar.py - Integrated session tabs + document upload
 - chat_interface.py - RAG-aware message handling- styles.py - Extended with sidebar + dropzone CSS
 - components.py - Reusable UI components
-Configuration:- requirements.txt - Added RAG dependencies (pypdf, chardet, faiss-cpu, sentence-transformers)### Tests (/home/project/Step-3.5-Flash/tests/)Unit Tests (tests/unit/):- rag/test_document_processor.py - 10 tests ✅
+Configuration:- requirements.txt - Added RAG dependencies (pypdf, chardet, faiss-cpu, sentence-transformers)### Tests (/home/project/Flash-Chatbot/tests/)Unit Tests (tests/unit/):- rag/test_document_processor.py - 10 tests ✅
 - rag/test_retriever.py - 11 tests ✅
 - rag/test_embedder.py - Skips without dependency- session/test_session_manager.py - 23 tests ✅ (NEW)- ui/test_session_upload.py - 9 tests ✅- ui/test_session_tabs.py - 11 tests ✅ (NEW)
 - services/test_chat_service_rag.py - 8 tests ✅### Documentation- VALIDATED_EXECUTION_PLAN.md - Execution roadmap with decision points- RAG_PROGRESS.md - Detailed RAG implementation status

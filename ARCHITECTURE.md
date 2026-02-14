@@ -2,7 +2,7 @@
 
 ## Overview
 
-Step-3.5-Flash is a production-grade chatbot application built with **Clean Architecture** principles. The application uses a modular design with clear separation of concerns, making it maintainable, testable, and scalable.
+Flash-Chatbot is a production-grade chatbot application built with **Clean Architecture** principles. The application uses a modular design with clear separation of concerns, making it maintainable, testable, and scalable.
 
 ## Architecture Principles
 
@@ -35,7 +35,7 @@ Dependencies always point inward:
 ## Project Structure
 
 ```
-Step-3.5-Flash/
+Flash-Chatbot/
 ├── src/
 │   ├── main.py                    # Application entry point
 │   ├── __init__.py

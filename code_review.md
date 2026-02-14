@@ -55,7 +55,7 @@ Accomplished
 - Verify Hugging Face Spaces deployment works end-to-end
 - Potential: Add retry logic for API timeouts (user mentioned timeout errors earlier)
 Relevant files / directories
-Source Code (/home/project/Step-3.5-Flash/src/):
+Source Code (/home/project/Flash-Chatbot/src/):
 - main.py - Application entry point
 - config/constants.py - Application constants (colors, defaults)
 - config/settings.py - Pydantic settings with validation
@@ -71,19 +71,19 @@ Source Code (/home/project/Step-3.5-Flash/src/):
 - ui/sidebar.py - Settings sidebar
 - utils/logger.py - Logging utilities
 Configuration Files:
-- /home/project/Step-3.5-Flash/main.py - CRITICAL - Root entry point for HF Spaces
-- /home/project/Step-3.5-Flash/requirements.txt - Dependencies
-- /home/project/Step-3.5-Flash/Dockerfile - Multi-stage build, uses main.py entrypoint
-- /home/project/Step-3.5-Flash/docker-compose.yml - Local development
-- /home/project/Step-3.5-Flash/.env.example - Environment template
-- /home/project/Step-3.5-Flash/pytest.ini - Test configuration
+- /home/project/Flash-Chatbot/main.py - CRITICAL - Root entry point for HF Spaces
+- /home/project/Flash-Chatbot/requirements.txt - Dependencies
+- /home/project/Flash-Chatbot/Dockerfile - Multi-stage build, uses main.py entrypoint
+- /home/project/Flash-Chatbot/docker-compose.yml - Local development
+- /home/project/Flash-Chatbot/.env.example - Environment template
+- /home/project/Flash-Chatbot/pytest.ini - Test configuration
 Documentation:
-- /home/project/Step-3.5-Flash/README.md - Main documentation
-- /home/project/Step-3.5-Flash/HF_README.md - Hugging Face Spaces README
-- /home/project/Step-3.5-Flash/ARCHITECTURE.md - Architecture documentation
-- /home/project/Step-3.5-Flash/CHANGELOG.md - Version history
-- /home/project/Step-3.5-Flash/MASTER_EXECUTION_PLAN.md - Execution roadmap
-Tests (/home/project/Step-3.5-Flash/tests/):
+- /home/project/Flash-Chatbot/README.md - Main documentation
+- /home/project/Flash-Chatbot/HF_README.md - Hugging Face Spaces README
+- /home/project/Flash-Chatbot/ARCHITECTURE.md - Architecture documentation
+- /home/project/Flash-Chatbot/CHANGELOG.md - Version history
+- /home/project/Flash-Chatbot/MASTER_EXECUTION_PLAN.md - Execution roadmap
+Tests (/home/project/Flash-Chatbot/tests/):
 - conftest.py - Pytest fixtures
 - unit/test_config.py - Settings tests
 - unit/test_api_models.py - Model tests
