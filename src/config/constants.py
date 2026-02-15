@@ -20,8 +20,12 @@ RETRY_BACKOFF = 2.0  # exponential backoff multiplier
 
 # UI Configuration
 PAGE_TITLE = "Flash Chatbot"
-PAGE_ICON = ""
+PAGE_ICON = "⚡"
 PAGE_LAYOUT = "centered"
+
+# Upload Configuration
+MAX_UPLOAD_SIZE_MB = 10
+MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
 # Sidebar Configuration
 SIDEBAR_TITLE = "⚙️ Settings"
@@ -43,9 +47,15 @@ THINKING_LABEL = "Thinking Process"
 CONTENT_LABEL = "Response"
 
 # Error Messages
-ERROR_API_KEY_MISSING = "NVIDIA API key is not configured. Please set NVIDIA_API_KEY environment variable."
-ERROR_API_CONNECTION = "Failed to connect to NVIDIA API. Please check your network connection."
-ERROR_API_RATE_LIMIT = "Rate limit exceeded. Please wait a moment before sending another message."
+ERROR_API_KEY_MISSING = (
+    "NVIDIA API key is not configured. Please set NVIDIA_API_KEY environment variable."
+)
+ERROR_API_CONNECTION = (
+    "Failed to connect to NVIDIA API. Please check your network connection."
+)
+ERROR_API_RATE_LIMIT = (
+    "Rate limit exceeded. Please wait a moment before sending another message."
+)
 ERROR_API_AUTH = "Authentication failed. Please check your API key."
 ERROR_GENERIC = "An error occurred. Please try again."
 

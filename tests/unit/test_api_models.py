@@ -11,39 +11,37 @@ from src.api.models import (
     Choice,
     ChatResponse,
     StreamChunk,
-    ReasoningContent
+    ReasoningContent,
 )
 
 
 class TestMessage:
     """Tests for Message model."""
-    
+
     def test_valid_message(self):
         """Test creating valid message."""
         msg = Message(role="user", content="Hello")
         assert msg.role == "user"
         assert msg.content == "Hello"
         assert msg.reasoning_details is None
-    
+
     def test_message_with_reasoning(self):
         """Test message with reasoning details."""
         msg = Message(
-            role="assistant",
-            content="Response",
-            reasoning_details="Thinking..."
+            role="assistant", content="Response", reasoning_details="Thinking..."
         )
         assert msg.reasoning_details == "Thinking..."
-    
+
     def test_invalid_role(self):
         """Test invalid role."""
         with pytest.raises(ValidationError):
             Message(role="invalid", content="Hello")
-    
+
     def test_empty_content(self):
         """Test empty content validation."""
         with pytest.raises(ValidationError):
             Message(role="user", content="")
-    
+
     def test_system_message(self):
         """Test system message."""
         msg = Message(role="system", content="System prompt")
@@ -52,12 +50,12 @@ class TestMessage:
 
 class TestChatTemplateKwargs:
     """Tests for ChatTemplateKwargs."""
-    
+
     def test_default_thinking(self):
         """Test default thinking value."""
         kwargs = ChatTemplateKwargs()
         assert kwargs.thinking is True
-    
+
     def test_disabled_thinking(self):
         """Test disabled thinking."""
         kwargs = ChatTemplateKwargs(thinking=False)
@@ -66,67 +64,62 @@ class TestChatTemplateKwargs:
 
 class TestChatRequest:
     """Tests for ChatRequest."""
-    
+
     def test_valid_request(self):
         """Test valid request."""
         request = ChatRequest(
             model="test-model",
-            messages=[
-                Message(role="user", content="Hello")
-            ],
+            messages=[Message(role="user", content="Hello")],
             max_tokens=100,
             temperature=0.7,
-            top_p=0.9
+            top_p=0.9,
         )
         assert request.model == "test-model"
         assert len(request.messages) == 1
-    
+
     def test_default_values(self):
         """Test default values."""
         request = ChatRequest(
-            model="test-model",
-            messages=[Message(role="user", content="Hi")]
+            model="test-model", messages=[Message(role="user", content="Hi")]
         )
         assert request.max_tokens == 65536
         assert request.temperature == 1.00
         assert request.top_p == 0.95
         assert request.stream is True
         assert request.chat_template_kwargs.thinking is True
-    
+
     def test_invalid_max_tokens(self):
         """Test invalid max_tokens."""
         with pytest.raises(ValidationError):
             ChatRequest(
                 model="test",
                 messages=[Message(role="user", content="Hi")],
-                max_tokens=0
+                max_tokens=0,
             )
-        
+
         with pytest.raises(ValidationError):
             ChatRequest(
                 model="test",
                 messages=[Message(role="user", content="Hi")],
-                max_tokens=200000
+                max_tokens=200000,
             )
-    
+
     def test_invalid_temperature(self):
         """Test invalid temperature."""
         with pytest.raises(ValidationError):
             ChatRequest(
                 model="test",
                 messages=[Message(role="user", content="Hi")],
-                temperature=-0.1
+                temperature=-0.1,
             )
-    
+
     def test_invalid_top_p(self):
         """Test invalid top_p."""
         with pytest.raises(ValidationError):
             ChatRequest(
-                model="test",
-                messages=[Message(role="user", content="Hi")],
-                top_p=1.1
+                model="test", messages=[Message(role="user", content="Hi")], top_p=1.1
             )
-    
+
     def test_empty_messages(self):
         """Test empty messages."""
         with pytest.raises(ValidationError):
@@ -135,7 +128,70 @@ class TestChatRequest:
 
 class TestStreamChunk:
     """Tests for StreamChunk."""
-    
+
+    def test_reasoning_details_extraction(self):
+        """Test extracting reasoning_details from message property (CRIT-3 fix).
+
+        This test verifies that reasoning_details property works correctly
+        when accessing Pydantic Message model attributes.
+        """
+        # Create a message with reasoning_details
+        message = Message(
+            role="assistant",
+            content="Hello",
+            reasoning_details="Thinking about this...",
+        )
+
+        chunk = StreamChunk(
+            id="test-id",
+            object="chat.completion.chunk",
+            created=1234567890,
+            model="test-model",
+            choices=[Choice(index=0, message=message)],
+        )
+
+        # This should work without AttributeError (was broken before fix)
+        details = chunk.reasoning_details
+        assert details == "Thinking about this..."
+
+    def test_reasoning_details_none(self):
+        """Test reasoning_details when not present."""
+        message = Message(role="assistant", content="Hello")
+
+        chunk = StreamChunk(
+            id="test-id",
+            object="chat.completion.chunk",
+            created=1234567890,
+            model="test-model",
+            choices=[Choice(index=0, message=message)],
+        )
+
+        assert chunk.reasoning_details is None
+
+    def test_reasoning_details_empty_choices(self):
+        """Test reasoning_details with empty choices."""
+        chunk = StreamChunk(
+            id="test-id",
+            object="chat.completion.chunk",
+            created=1234567890,
+            model="test-model",
+            choices=[],
+        )
+
+        assert chunk.reasoning_details is None
+
+    def test_reasoning_details_none_message(self):
+        """Test reasoning_details when message is None."""
+        chunk = StreamChunk(
+            id="test-id",
+            object="chat.completion.chunk",
+            created=1234567890,
+            model="test-model",
+            choices=[Choice(index=0, message=None)],
+        )
+
+        assert chunk.reasoning_details is None
+
     def test_stream_chunk_creation(self):
         """Test creating stream chunk."""
         chunk = StreamChunk(
@@ -143,13 +199,11 @@ class TestStreamChunk:
             object="chat.completion.chunk",
             created=1234567890,
             model="test-model",
-            choices=[
-                Choice(index=0, delta={"content": "Hello"})
-            ]
+            choices=[Choice(index=0, delta={"content": "Hello"})],
         )
         assert chunk.id == "chunk-1"
         assert chunk.delta_content == "Hello"
-    
+
     def test_delta_content_extraction(self):
         """Test extracting content from delta."""
         chunk = StreamChunk(
@@ -157,10 +211,10 @@ class TestStreamChunk:
             object="chunk",
             created=1,
             model="test",
-            choices=[Choice(index=0, delta={"content": "Test"})]
+            choices=[Choice(index=0, delta={"content": "Test"})],
         )
         assert chunk.delta_content == "Test"
-    
+
     def test_delta_reasoning_extraction(self):
         """Test extracting reasoning from delta."""
         chunk = StreamChunk(
@@ -168,10 +222,10 @@ class TestStreamChunk:
             object="chunk",
             created=1,
             model="test",
-            choices=[Choice(index=0, delta={"reasoning": "Thinking"})]
+            choices=[Choice(index=0, delta={"reasoning": "Thinking"})],
         )
         assert chunk.delta_reasoning == "Thinking"
-    
+
     def test_is_done_detection(self):
         """Test detecting end of stream."""
         chunk = StreamChunk(
@@ -179,27 +233,25 @@ class TestStreamChunk:
             object="chunk",
             created=1,
             model="test",
-            choices=[Choice(index=0, finish_reason="stop")]
+            choices=[Choice(index=0, finish_reason="stop")],
         )
         assert chunk.is_done is True
 
 
 class TestReasoningContent:
     """Tests for ReasoningContent."""
-    
+
     def test_thinking_tag_removal(self):
         """Test removal of  <think>  tags."""
-        content = ReasoningContent(
-            content="<think>This is thinking</think>"
-        )
+        content = ReasoningContent(content="<think>This is thinking</think>")
         assert "<think>" not in content.cleaned_content
         assert "</think>" not in content.cleaned_content
-    
+
     def test_empty_content(self):
         """Test empty content handling."""
         content = ReasoningContent(content="")
         assert content.cleaned_content == ""
-    
+
     def test_content_without_tags(self):
         """Test content without tags."""
         content = ReasoningContent(content="Plain thinking")
@@ -208,7 +260,7 @@ class TestReasoningContent:
 
 class TestChatResponse:
     """Tests for ChatResponse."""
-    
+
     def test_response_creation(self):
         """Test creating response."""
         response = ChatResponse(
@@ -220,9 +272,9 @@ class TestChatResponse:
                 Choice(
                     index=0,
                     message=Message(role="assistant", content="Response"),
-                    finish_reason="stop"
+                    finish_reason="stop",
                 )
-            ]
+            ],
         )
         assert response.id == "response-1"
         assert len(response.choices) == 1

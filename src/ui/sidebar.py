@@ -88,53 +88,51 @@ def render_sidebar() -> Tuple[Dict[str, Any], bool]:
             help="Nucleus sampling parameter",
         )
 
-    st.divider()
+        st.divider()
 
-    # Document Q&A section
-    st.subheader("📚 Document Q&A")
+        # Document Q&A section
+        st.subheader("📚 Document Q&A")
 
-    # Import and render document upload
-    from src.ui.document_upload import render_document_upload
+        # Import and render document upload
+        from src.ui.document_upload import render_document_upload
 
-    render_document_upload()
+        render_document_upload()
 
-    # Show document info if uploaded
-    if hasattr(st.session_state, "get") and st.session_state.get(
-        "current_document_name"
-    ):
-        st.caption(f"📄 {st.session_state['current_document_name']}")
-        if hasattr(st.session_state, "get") and st.session_state.get("retriever"):
-            retriever = st.session_state["retriever"]
+        # Show document info if uploaded
+        current_doc = st.session_state.get("rag_document_name")
+        if current_doc:
+            st.caption(f"📄 {current_doc}")
+            retriever = st.session_state.get("rag_retriever")
             if retriever and hasattr(retriever, "index") and retriever.index:
                 st.caption(f"📊 {retriever.index.ntotal} text chunks in memory")
 
-    st.divider()
+        st.divider()
 
-    # Clear conversation button
-    clear_requested = st.button(
-        "Clear Conversation", use_container_width=True, type="secondary"
-    )
+        # Clear conversation button
+        clear_requested = st.button(
+            "Clear Conversation", use_container_width=True, type="secondary"
+        )
 
-    # Model info
-    st.divider()
-    with st.expander("Model Info"):
-        st.info("""
-                **Model**: moonshotai/kimi-k2.5
-                
-                **Provider**: NVIDIA API
-                
-                **Features**:
-                - Streaming responses
-                - Thinking/reasoning display
-                - Up to 128k tokens
-                - Multi-turn conversation
-            """)
+        # Model info
+        st.divider()
+        with st.expander("Model Info"):
+            st.info("""
+**Model**: moonshotai/kimi-k2.5
 
-    settings = {
-        "system_prompt": system_prompt,
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "top_p": top_p,
-    }
+**Provider**: NVIDIA API
 
-    return settings, clear_requested
+**Features**:
+- Streaming responses
+- Thinking/reasoning display
+- Up to 128k tokens
+- Multi-turn conversation
+""")
+
+        settings = {
+            "system_prompt": system_prompt,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "top_p": top_p,
+        }
+
+        return settings, clear_requested

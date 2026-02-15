@@ -15,49 +15,77 @@ class Document:
     metadata: dict = field(default_factory=dict)
 
 
-class Retriever:
-    """Per-session FAISS index with document store.
+def create_retriever(embedder: Embedder) -> "BaseRetriever":
+    """Factory function to create appropriate retriever based on FAISS availability.
 
-    Falls back to SimpleRetriever if FAISS is not available.
+    Args:
+        embedder: Embedder instance for creating embeddings
+
+    Returns:
+        FAISSRetriever if FAISS is available, otherwise SimpleRetriever
     """
+    try:
+        import faiss
 
-    def __new__(cls, embedder: Embedder):
-        """Create appropriate retriever based on FAISS availability."""
-        if cls._check_faiss():
-            instance = super().__new__(cls)
-            instance._is_fallback = False
-            return instance
-        else:
-            # Return SimpleRetriever instance instead
-            instance = super().__new__(SimpleRetriever)
-            instance._is_fallback = True
-            return instance
+        return FAISSRetriever(embedder)
+    except ImportError:
+        return SimpleRetriever(embedder)
+
+
+class BaseRetriever:
+    """Abstract base class for retrievers."""
 
     def __init__(self, embedder: Embedder):
-        """Initialize retriever.
+        """Initialize base retriever.
 
         Args:
             embedder: Embedder instance for creating embeddings
         """
         self.embedder = embedder
-        self.index = None
         self.documents: List[Document] = []
+
+    def add_documents(self, texts: List[str], metadata: Optional[List[dict]] = None):
+        """Add documents to the index.
+
+        Args:
+            texts: List of document texts
+            metadata: Optional list of metadata dicts
+        """
+        raise NotImplementedError
+
+    def retrieve(self, query: str, k: int = 3) -> List[Tuple[Document, float]]:
+        """Retrieve top-k documents with similarity scores.
+
+        Args:
+            query: Query text
+            k: Number of results to return
+
+        Returns:
+            List of (Document, score) tuples
+        """
+        raise NotImplementedError
+
+    def clear(self):
+        """Remove all documents and reset index."""
+        raise NotImplementedError
+
+
+class FAISSRetriever(BaseRetriever):
+    """Per-session FAISS index with document store."""
+
+    def __init__(self, embedder: Embedder):
+        """Initialize FAISS retriever.
+
+        Args:
+            embedder: Embedder instance for creating embeddings
+        """
+        super().__init__(embedder)
+        self.index = None
         # Dimension is now dynamic based on embedder model (768 for Qwen, 384 for MiniLM)
-        self._faiss_available = True
-
-    @staticmethod
-    def _check_faiss() -> bool:
-        """Check if FAISS is available."""
-        try:
-            import faiss
-
-            return True
-        except ImportError:
-            return False
 
     def _init_index(self):
         """Initialize FAISS index if not already done."""
-        if self.index is None and self._faiss_available:
+        if self.index is None:
             import faiss
 
             # Get dimension from embedder (dynamic: 768 for Qwen, 384 for MiniLM)
@@ -132,15 +160,14 @@ class SimpleMockIndex:
         self.ntotal += count
 
 
-class SimpleRetriever(Retriever):
+class SimpleRetriever(BaseRetriever):
     """Fallback retriever without FAISS using simple cosine similarity."""
 
     def __init__(self, embedder: Embedder):
         """Initialize simple retriever."""
-        self.embedder = embedder
+        super().__init__(embedder)
         self._mock_index = SimpleMockIndex()
         self.index = self._mock_index  # Expose for API compatibility
-        self.documents: List[Document] = []
         self._embeddings: Optional[np.ndarray] = None
         # Dimension is dynamic based on embedder (768 for Qwen, 384 for MiniLM)
 
@@ -188,15 +215,12 @@ class SimpleRetriever(Retriever):
         if self._embeddings is None or len(self.documents) == 0:
             return []
 
-        # Create query embedding
+        # Create query embedding - already normalized by embedder
         query_emb = self.embedder.embed_query(query)
-        query_emb = query_emb / np.linalg.norm(query_emb)
 
-        # Compute cosine similarity
-        embeddings_norm = self._embeddings / np.linalg.norm(
-            self._embeddings, axis=1, keepdims=True
-        )
-        similarities = np.dot(embeddings_norm, query_emb)
+        # Compute cosine similarity without redundant normalization
+        # (embedder already normalizes with normalize_embeddings=True)
+        similarities = np.dot(self._embeddings, query_emb)
 
         # Get top-k
         k = min(k, len(self.documents))
@@ -213,3 +237,7 @@ class SimpleRetriever(Retriever):
         self._mock_index.ntotal = 0
         self.documents = []
         self._embeddings = None
+
+
+# Backward compatibility alias
+Retriever = FAISSRetriever

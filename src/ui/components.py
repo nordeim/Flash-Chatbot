@@ -1,5 +1,6 @@
 """Reusable UI components."""
 
+import html
 from typing import Optional, Any
 
 import streamlit as st
@@ -9,47 +10,49 @@ from src.services.message_formatter import MessageFormatter
 
 
 def render_custom_css() -> None:
-    """Render custom CSS styles with accessibility."""
+    """Render custom CSS styles with accessibility and deduplication."""
     from src.ui.styles import get_combined_css
 
-    st.markdown(get_combined_css(), unsafe_allow_html=True)
+    if "css_injected" not in st.session_state:
+        st.markdown(get_combined_css(), unsafe_allow_html=True)
+        st.session_state["css_injected"] = True
 
 
 def render_message_bubble(
     content: str, role: str, thinking: Optional[str] = None
 ) -> None:
-    """Render a message bubble.
+    """Render a message bubble with XSS protection.
 
     Args:
         content: Message content
         role: Message role (user/assistant)
         thinking: Optional thinking content for assistant
     """
+    escaped_content = html.escape(content)
     if role == "user":
         st.markdown(
             f"""
             <div class="message-bubble message-user">
-                {content}
+            {escaped_content}
             </div>
-        """,
+            """,
             unsafe_allow_html=True,
         )
     else:
         st.markdown(
             f"""
             <div class="message-bubble message-assistant">
-                {content}
+            {escaped_content}
             </div>
-        """,
+            """,
             unsafe_allow_html=True,
         )
-
-        if thinking:
-            render_thinking_panel(thinking, is_streaming=False)
+    if thinking:
+        render_thinking_panel(thinking, is_streaming=False)
 
 
 def render_thinking_panel(content: str, is_streaming: bool = False) -> None:
-    """Render thinking panel.
+    """Render thinking panel with XSS protection.
 
     Args:
         content: Thinking content
@@ -60,30 +63,33 @@ def render_thinking_panel(content: str, is_streaming: bool = False) -> None:
     if not cleaned:
         return
 
+    escaped_cleaned = html.escape(cleaned)
+
     with st.expander("Thinking Process", expanded=is_streaming):
         st.markdown(
             f"""
             <div class="thinking-container">
-                <div class="thinking-label">Reasoning</div>
-                <div class="thinking-content">{cleaned}</div>
+            <div class="thinking-label">Reasoning</div>
+            <div class="thinking-content">{escaped_cleaned}</div>
             </div>
-        """,
+            """,
             unsafe_allow_html=True,
         )
 
 
 def render_error_message(error: str) -> None:
-    """Render error message.
+    """Render error message with XSS protection.
 
     Args:
         error: Error message
     """
+    escaped_error = html.escape(error)
     st.markdown(
         f"""
         <div class="error-message">
-            {error}
+        {escaped_error}
         </div>
-    """,
+        """,
         unsafe_allow_html=True,
     )
 

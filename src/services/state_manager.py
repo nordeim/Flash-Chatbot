@@ -316,7 +316,7 @@ class ChatStateManager:
         }
 
     def import_conversation(self, data: Dict[str, Any]) -> bool:
-        """Import conversation from dictionary.
+        """Import conversation from dictionary with validation.
 
         Args:
             data: Conversation data dictionary
@@ -325,10 +325,56 @@ class ChatStateManager:
             True if successful
         """
         try:
-            if "messages" in data:
-                self.messages = data["messages"]
-                logger.info(f"Imported {len(self.messages)} messages")
-                return True
+            if "messages" not in data:
+                logger.error("Import failed: no 'messages' key in data")
+                return False
+
+            validated = []
+            for i, msg in enumerate(data["messages"]):
+                # Validate message structure
+                if not isinstance(msg, dict):
+                    logger.warning(f"Skipping invalid message at index {i}: not a dict")
+                    continue
+
+                role = msg.get("role")
+                content = msg.get("content", "")
+
+                # Validate role
+                if role not in ("user", "assistant", "system"):
+                    logger.warning(
+                        f"Skipping message at index {i}: invalid role '{role}'"
+                    )
+                    continue
+
+                # Validate content type and size
+                if not isinstance(content, str):
+                    logger.warning(
+                        f"Skipping message at index {i}: content is not a string"
+                    )
+                    continue
+
+                if len(content) > 100_000:  # 100KB limit per message
+                    logger.warning(
+                        f"Skipping message at index {i}: content exceeds 100KB"
+                    )
+                    continue
+
+                # Validate timestamp if present
+                timestamp = msg.get("timestamp")
+                if timestamp and not isinstance(timestamp, str):
+                    timestamp = datetime.utcnow().isoformat()
+
+                validated.append(
+                    {
+                        "role": role,
+                        "content": content,
+                        "timestamp": timestamp or datetime.utcnow().isoformat(),
+                    }
+                )
+
+            self.messages = validated
+            logger.info(f"Imported {len(validated)} validated messages")
+            return True
         except Exception as e:
             logger.error(f"Failed to import conversation: {e}")
 

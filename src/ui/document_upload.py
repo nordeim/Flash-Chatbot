@@ -1,17 +1,24 @@
 """Ethereal document upload zone with processing feedback."""
 
-import streamlit as st
+import html
 from typing import Optional, Any
 
+import streamlit as st
+
+from src.config.constants import MAX_UPLOAD_SIZE_BYTES, MAX_UPLOAD_SIZE_MB
 from src.rag.document_processor import DocumentProcessor, DocumentProcessingError
 
 
 def _inject_upload_styles():
-    """Inject custom CSS for glass dropzone and document badge."""
-    st.markdown("""
-    <style>
-    /* Ethereal dropzone */
-    .ethereal-dropzone {
+    """Inject custom CSS for glass dropzone and document badge with deduplication."""
+    if "upload_css_injected" in st.session_state:
+        return
+
+    st.markdown(
+        """
+<style>
+/* Ethereal dropzone */
+.ethereal-dropzone {
         background: rgba(20, 25, 40, 0.6);
         backdrop-filter: blur(12px);
         border: 1px dashed rgba(0, 255, 224, 0.3);
@@ -88,69 +95,74 @@ def _inject_upload_styles():
         align-items: center;
         gap: 8px;
     }
-    </style>
-    """, unsafe_allow_html=True)
+        </style>
+    """,
+        unsafe_allow_html=True,
+    )
+    st.session_state["upload_css_injected"] = True
 
 
 class DocumentUpload:
     """Ethereal document upload component."""
-    
+
     def __init__(self, state: Any):
         """Initialize component.
-        
+
         Args:
             state: State manager with retriever and document_name properties
         """
         self.state = state
-    
+
     def render(self) -> None:
         """Display glass dropzone and manage document processing."""
         _inject_upload_styles()
-        
+
         # Show current document badge if exists
         if self.state.current_document_name:
             self._render_document_badge()
             return
-        
-        # Dropzone
-        with st.container():
-            st.markdown('<div class="ethereal-dropzone">', unsafe_allow_html=True)
-            st.markdown('<div class="upload-icon">📄</div>', unsafe_allow_html=True)
-            st.markdown('<div class="upload-text">Drop your document here</div>', unsafe_allow_html=True)
-            
-            uploaded_file = st.file_uploader(
-                "Upload document",
-                type=["pdf", "txt", "md"],
-                label_visibility="collapsed",
-                key="rag_uploader"
-            )
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-        
+
+        # Dropzone - Use single HTML block for visual styling
+        st.markdown(
+            '<div class="ethereal-dropzone">'
+            '<div class="upload-icon">📄</div>'
+            '<div class="upload-text">Drop your document here</div>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+        uploaded_file = st.file_uploader(
+            "Upload document",
+            type=["pdf", "txt", "md"],
+            label_visibility="collapsed",
+            key="rag_uploader",
+        )
+
         if uploaded_file:
             self._process_upload(uploaded_file)
-    
+
     def _render_document_badge(self) -> None:
         """Render document badge with filename and clear button."""
         col1, col2 = st.columns([0.9, 0.1])
-        
+
         with col1:
+            escaped_filename = html.escape(self.state.current_document_name)
             st.markdown(
                 f'<div class="doc-badge">'
-                f'<span>📄</span>'
-                f'<span class="filename">{self.state.current_document_name}</span>'
-                f'</div>',
-                unsafe_allow_html=True
+                f"<span>📄</span>"
+                f'<span class="filename">{escaped_filename}</span>'
+                f"</div>",
+                unsafe_allow_html=True,
             )
-        
+
         with col2:
             if st.button("✕", key="clear_doc", help="Remove document context"):
                 self._clear_document()
                 st.rerun()
-    
+
     def _process_upload(self, uploaded_file: Any) -> None:
         """Process uploaded file and update retriever.
-        
+
         Args:
             uploaded_file: Streamlit UploadedFile object
         """
@@ -159,76 +171,91 @@ class DocumentUpload:
         placeholder.markdown(
             '<div class="processing-text">'
             '<span class="processing-arc"></span>'
-            '<span>Extracting knowledge...</span>'
-            '</div>',
-            unsafe_allow_html=True
+            "<span>Extracting knowledge...</span>"
+            "</div>",
+            unsafe_allow_html=True,
         )
-        
+
         try:
             processor = DocumentProcessor()
             file_bytes = uploaded_file.getvalue()
+
+            # Check file size
+            if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
+                placeholder.error(
+                    f"❌ File too large. Maximum size: {MAX_UPLOAD_SIZE_MB}MB"
+                )
+                return
+
             chunks = processor.process(file_bytes, uploaded_file.name)
-            
+
             # Add to retriever
-            if hasattr(self.state, 'retriever') and self.state.retriever:
+            if hasattr(self.state, "retriever") and self.state.retriever:
                 self.state.retriever.add_documents(chunks)
                 self.state.current_document_name = uploaded_file.name
-                
-                placeholder.success(f"✅ Processed {len(chunks)} chunks from {uploaded_file.name}")
+
+                placeholder.success(
+                    f"✅ Processed {len(chunks)} chunks from {uploaded_file.name}"
+                )
             else:
                 placeholder.error("❌ No retriever available. Please refresh the page.")
-                
+
         except DocumentProcessingError as e:
             placeholder.error(f"❌ {str(e)}")
         except Exception as e:
             placeholder.error(f"❌ Unexpected error: {str(e)}")
-    
+
     def _clear_document(self) -> None:
         """Clear retriever and document metadata."""
-        if hasattr(self.state, 'clear_retriever'):
+        if hasattr(self.state, "clear_retriever"):
             self.state.clear_retriever()
         else:
             # Fallback: manually clear
-            if hasattr(self.state, 'retriever'):
+            if hasattr(self.state, "retriever"):
                 self.state.retriever = None
-            if hasattr(self.state, 'current_document_name'):
+            if hasattr(self.state, "current_document_name"):
                 self.state.current_document_name = None
 
 
 def render_document_upload() -> None:
     """Convenience function to render document upload component.
-    
+
     Uses st.session_state as state manager.
+    Uses consistent key 'rag_retriever' to match ChatStateManager.
     """
+
     # Create a state wrapper that accesses session_state
     class SessionStateWrapper:
+        RETRIEVER_KEY = "rag_retriever"
+        DOCUMENT_NAME_KEY = "rag_document_name"
+
         @property
         def current_document_name(self) -> Optional[str]:
-            return st.session_state.get("current_document_name")
-        
+            return st.session_state.get(self.DOCUMENT_NAME_KEY)
+
         @current_document_name.setter
         def current_document_name(self, value: Optional[str]) -> None:
-            st.session_state["current_document_name"] = value
-        
+            st.session_state[self.DOCUMENT_NAME_KEY] = value
+
         @property
         def retriever(self) -> Optional[Any]:
-            return st.session_state.get("retriever")
-        
+            return st.session_state.get(self.RETRIEVER_KEY)
+
         @retriever.setter
         def retriever(self, value: Optional[Any]) -> None:
-            st.session_state["retriever"] = value
-        
+            st.session_state[self.RETRIEVER_KEY] = value
+
         def clear_retriever(self) -> None:
             """Clear retriever and document metadata."""
-            if "retriever" in st.session_state:
-                retriever = st.session_state["retriever"]
-                if hasattr(retriever, 'clear'):
+            if self.RETRIEVER_KEY in st.session_state:
+                retriever = st.session_state[self.RETRIEVER_KEY]
+                if hasattr(retriever, "clear"):
                     retriever.clear()
-                del st.session_state["retriever"]
-            
-            if "current_document_name" in st.session_state:
-                del st.session_state["current_document_name"]
-    
+                del st.session_state[self.RETRIEVER_KEY]
+
+            if self.DOCUMENT_NAME_KEY in st.session_state:
+                del st.session_state[self.DOCUMENT_NAME_KEY]
+
     state = SessionStateWrapper()
     component = DocumentUpload(state)
     component.render()

@@ -18,25 +18,22 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def render_chat_interface(
-    chat_service: ChatService,
-    settings: Dict[str, Any]
-) -> None:
+def render_chat_interface(chat_service: ChatService, settings: Dict[str, Any]) -> None:
     """Render main chat interface.
-    
+
     Args:
         chat_service: Chat service instance
         settings: Current settings
     """
     # Render custom CSS
     render_custom_css()
-    
+
     # Page title
     st.title(f"{PAGE_ICON} {PAGE_TITLE}")
-    
+
     # Initialize state manager
     state_manager = chat_service.state_manager
-    
+
     # Display conversation history
     for msg in state_manager.messages:
         if msg["role"] == "user":
@@ -49,31 +46,29 @@ def render_chat_interface(
                     render_thinking_panel(msg["thinking"], is_streaming=False)
                 # Show content
                 st.markdown(msg["content"])
-    
+
     # Show empty state if no messages
     if not state_manager.has_messages:
         render_empty_state()
-    
+
     # Chat input
     prompt = st.chat_input("Type your message...")
-    
+
     # Handle pending prompt from example buttons
     if state_manager.pending_prompt:
         prompt = state_manager.pending_prompt
         state_manager.pending_prompt = None
-    
+
     # Process user input
     if prompt:
         _handle_user_input(chat_service, prompt, settings)
 
 
 def _handle_user_input(
-    chat_service: ChatService,
-    prompt: str,
-    settings: Dict[str, Any]
+    chat_service: ChatService, prompt: str, settings: Dict[str, Any]
 ) -> None:
     """Handle user input and generate response.
-    
+
     Args:
         chat_service: Chat service instance
         prompt: User input
@@ -82,45 +77,43 @@ def _handle_user_input(
     # Add user message
     with st.chat_message("user"):
         st.markdown(prompt)
-    
+
     # Generate assistant response
     with st.chat_message("assistant", avatar="🤖"):
         # Placeholders for streaming content
         thinking_placeholder = st.empty()
         content_placeholder = st.empty()
-        
+
         # Accumulate content
         full_thinking = ""
         full_content = ""
-        
+
     try:
         # Check if we have a document for RAG
-        retriever = None
-        if hasattr(st.session_state, 'get'):
-            retriever = st.session_state.get("retriever")
-        
+        retriever = st.session_state.get("rag_retriever")
+
         # Choose streaming method based on retriever
         if retriever:
             # Use RAG-enhanced streaming
             stream_generator = chat_service.stream_message_with_rag(
                 content=prompt,
                 retriever=retriever,
-                system_prompt=settings.get("system_prompt"),
-                max_tokens=settings.get("max_tokens"),
-                temperature=settings.get("temperature"),
-                top_p=settings.get("top_p"),
+                system_prompt=settings.get("system_prompt") or "",
+                max_tokens=settings.get("max_tokens") or 65536,
+                temperature=settings.get("temperature") or 1.0,
+                top_p=settings.get("top_p") or 0.95,
             )
             logger.info("Using RAG-enhanced streaming with document context")
         else:
             # Use regular streaming
             stream_generator = chat_service.stream_message(
                 content=prompt,
-                system_prompt=settings.get("system_prompt"),
-                max_tokens=settings.get("max_tokens"),
-                temperature=settings.get("temperature"),
-                top_p=settings.get("top_p"),
+                system_prompt=settings.get("system_prompt") or "",
+                max_tokens=settings.get("max_tokens") or 65536,
+                temperature=settings.get("temperature") or 1.0,
+                top_p=settings.get("top_p") or 0.95,
             )
-        
+
         # Stream response
         for thinking, content, reasoning_details in stream_generator:
             # Update thinking
@@ -145,12 +138,13 @@ def _handle_user_input(
 
 def render_chat_container(chat_service: ChatService) -> None:
     """Render chat container with auto-scroll.
-    
+
     Args:
         chat_service: Chat service instance
     """
     # Add auto-scroll JavaScript
-    st.markdown("""
+    st.markdown(
+        """
         <script>
             // Auto-scroll to bottom on new messages
             const chatContainer = document.querySelector('.main .block-container');
@@ -158,4 +152,6 @@ def render_chat_container(chat_service: ChatService) -> None:
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         </script>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )

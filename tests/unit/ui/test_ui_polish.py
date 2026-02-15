@@ -197,6 +197,65 @@ class TestMicroInteractions:
         assert "cubic-bezier" in css
 
 
+class TestXSSPrevention:
+    """Tests for XSS prevention in UI components."""
+
+    def test_message_bubble_escapes_xss_payload(self):
+        """Test that XSS payloads are escaped in message bubbles."""
+        from src.ui.components import render_message_bubble
+
+        # XSS payload that should be escaped
+        xss_payload = "<img src=x onerror=\"alert('xss')\">"
+
+        # Mock streamlit.markdown to capture the HTML
+        captured_html = []
+
+        def mock_markdown(html, **kwargs):
+            captured_html.append(html)
+
+        import streamlit as st
+
+        original_markdown = st.markdown
+        st.markdown = mock_markdown
+
+        try:
+            render_message_bubble(xss_payload, "user")
+
+            # The HTML should contain the escaped version
+            assert len(captured_html) > 0
+            html_output = captured_html[0]
+            # Check that the payload is escaped (not raw)
+            assert "<img" not in html_output or "&lt;img" in html_output
+        finally:
+            st.markdown = original_markdown
+
+    def test_error_message_escapes_xss(self):
+        """Test that error messages escape XSS content."""
+        from src.ui.components import render_error_message
+
+        xss_payload = '<script>alert("xss")</script>'
+
+        captured_html = []
+
+        def mock_markdown(html, **kwargs):
+            captured_html.append(html)
+
+        import streamlit as st
+
+        original_markdown = st.markdown
+        st.markdown = mock_markdown
+
+        try:
+            render_error_message(xss_payload)
+
+            assert len(captured_html) > 0
+            html_output = captured_html[0]
+            # Script tag should be escaped
+            assert "<script>" not in html_output or "&lt;script&gt;" in html_output
+        finally:
+            st.markdown = original_markdown
+
+
 class TestReducedMotionUI:
     """Tests for reduced-motion support in UI polish."""
 

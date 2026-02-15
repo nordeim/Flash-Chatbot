@@ -34,35 +34,35 @@ def configure_page() -> None:
 
 def initialize_app() -> ChatService:
     """Initialize application components.
-    
+
     Returns:
         Configured chat service
-        
+
     Raises:
         SystemExit: If initialization fails
     """
     try:
         # Load settings
         settings = get_settings()
-        
+
         # Setup logging
         log_level = settings.log_level if settings else "INFO"
         setup_logging(level=log_level)
-        
+
         logger.info("Initializing application...")
-        
+
         # Validate API key
         if not settings.nvidia_api_key:
             st.error("❌ NVIDIA_API_KEY environment variable is required")
             st.info("Please set your NVIDIA API key in the environment variables")
             st.stop()
-        
+
         # Initialize chat service
         chat_service = ChatService()
-        
+
         logger.info("Application initialized successfully")
         return chat_service
-        
+
     except NvidiaAuthError as e:
         logger.error(f"Authentication failed: {e}")
         st.error(f"❌ Authentication failed: {e}")
@@ -74,22 +74,22 @@ def initialize_app() -> ChatService:
         st.stop()
 
 
-def main() -> NoReturn:
+def main() -> None:
     """Main application entry point."""
     # Configure page
     configure_page()
-    
+
     # Initialize application
     chat_service = initialize_app()
-    
+
     # Render sidebar and get settings
     settings, clear_requested = render_sidebar()
-    
+
     # Handle clear request
     if clear_requested:
         chat_service.clear_conversation()
         st.rerun()
-    
+
     # Render main chat interface
     render_chat_interface(chat_service, settings)
 
