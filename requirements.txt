@@ -17,8 +17,8 @@ pypdf>=3.17.0              # PDF text extraction
 faiss-cpu>=1.7.4          # Vector store for retrieval
 chardet>=5.2.0            # Text encoding detection
 
-sentence-transformers>=5.2.0
-torch>=2.9.1
-torchaudio>=2.9.0+cpu
-torchvision>=0.24.0+cpu
-transformers>=4.57.3
+sentence-transformers==5.2.0
+torch==2.9.1
+torchaudio==2.9.0+cpu
+torchvision==0.24.0+cpu
+transformers==4.57.3
