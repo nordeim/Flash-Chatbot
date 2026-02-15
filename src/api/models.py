@@ -1,7 +1,7 @@
 """Pydantic models for NVIDIA API requests and responses."""
 
 from typing import Any, Dict, List, Optional, Literal
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class Message(BaseModel):
@@ -15,12 +15,11 @@ class Message(BaseModel):
         default=None, description="Reasoning/thinking details for assistant messages"
     )
 
-    class Config:
-        """Pydantic config."""
-
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {"role": "user", "content": "Hello, how are you?"}
         }
+    }
 
 
 class ChatTemplateKwargs(BaseModel):
@@ -50,7 +49,8 @@ class ChatRequest(BaseModel):
         default_factory=ChatTemplateKwargs, description="Chat template configuration"
     )
 
-    @validator("messages")
+    @field_validator("messages")
+    @classmethod
     def validate_messages(cls, v: List[Message]) -> List[Message]:
         """Validate message list."""
         if not v:
@@ -132,15 +132,15 @@ class ReasoningContent(BaseModel):
         default=None, description="Cleaned reasoning text"
     )
 
-    @validator("cleaned_content", always=True)
-    def clean_reasoning(cls, v: Optional[str], values: Dict) -> str:
+    @model_validator(mode="after")
+    def clean_reasoning(self) -> "ReasoningContent":
         """Clean reasoning content by removing tags."""
-        content = values.get("content", "")
-        if not content:
-            return ""
-
-        # Remove <think> tags
         import re
 
-        cleaned = re.sub(r"</?think>", "", content).strip()
-        return cleaned
+        content = self.content
+        if not content:
+            self.cleaned_content = ""
+        else:
+            cleaned = re.sub(r"</?think>", "", content).strip()
+            self.cleaned_content = cleaned
+        return self
