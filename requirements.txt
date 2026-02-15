@@ -13,6 +13,12 @@ python-json-logger>=2.0.7
 
 # RAG-Lite: Document Q&A
 pypdf>=3.17.0              # PDF text extraction
-sentence-transformers>=2.2.0  # Local embeddings (all-MiniLM-L6-v2)
+#sentence-transformers>=2.2.0  # Local embeddings (all-MiniLM-L6-v2)
 faiss-cpu>=1.7.4          # Vector store for retrieval
 chardet>=5.2.0            # Text encoding detection
+
+sentence-transformers>=5.2.0
+torch>=2.9.1
+torchaudio>=2.9.0+cpu
+torchvision>=0.24.0+cpu
+transformers>=4.57.3
