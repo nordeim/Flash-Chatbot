@@ -23,7 +23,13 @@ class Embedder:
     def get_model(cls):
         """Load model once and cache (lazy loading), with fallback support."""
         if cls._model is None:
-            from sentence_transformers import SentenceTransformer
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError:
+                raise ImportError(
+                    "sentence-transformers is not installed. "
+                    "Install with: pip install sentence-transformers"
+                )
 
             # Try primary model first
             try:

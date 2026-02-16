@@ -134,24 +134,3 @@ def _handle_user_input(
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         render_error_message(f"Failed to generate response: {str(e)}")
-
-
-def render_chat_container(chat_service: ChatService) -> None:
-    """Render chat container with auto-scroll.
-
-    Args:
-        chat_service: Chat service instance
-    """
-    # Add auto-scroll JavaScript
-    st.markdown(
-        """
-        <script>
-            // Auto-scroll to bottom on new messages
-            const chatContainer = document.querySelector('.main .block-container');
-            if (chatContainer) {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-        </script>
-    """,
-        unsafe_allow_html=True,
-    )

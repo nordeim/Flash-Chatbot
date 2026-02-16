@@ -153,13 +153,13 @@ class NvidiaChatClient(LoggerMixin):
                 stream=stream,
             )
 
-            # Check status code
-            if response.status_code != 200:
-                try:
-                    body = response.json()
-                except Exception:
-                    body = None
-                raise_for_status(response.status_code, body)
+        # Check status code
+        if response.status_code != 200:
+            try:
+                body = response.json()
+            except Exception:
+                body = None
+            raise_for_status(response.status_code, body)
 
             return response
 
